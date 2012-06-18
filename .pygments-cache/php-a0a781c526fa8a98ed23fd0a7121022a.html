@@ -1,0 +1,57 @@
+<div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="sd">/**</span>
+<span class="sd"> * Funcao para encodar/decodar (charset) texto.</span>
+<span class="sd"> * Suporta array multidimensional</span>
+<span class="sd"> *</span>
+<span class="sd"> * @author kenshin6x &lt;seisxis@gmail.com&gt;</span>
+<span class="sd"> *</span>
+<span class="sd"> * @param mixed $input Valor a ser encodado/decodado. Caso seja um objeto, é necessario que seus atributos sejam publicos, e neste caso, o retorno sera uma copia do objeto, mantendo nome e atributos</span>
+<span class="sd"> * @param string $function Nome da funcao a ser usada para transferir.</span>
+<span class="sd"> *</span>
+<span class="sd"> * @return mixed $return</span>
+<span class="sd"> */</span>
+
+<span class="k">function</span> <span class="nf">charset_transfer</span><span class="p">(</span><span class="nv">$input</span><span class="p">,</span><span class="nv">$function</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span><span class="p">(</span><span class="nb">gettype</span><span class="p">(</span><span class="nv">$input</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="s2">&quot;string&quot;</span><span class="o">:</span>
+            <span class="nv">$return</span> <span class="o">=</span> <span class="nb">call_user_func</span><span class="p">(</span><span class="nv">$function</span><span class="p">,</span><span class="nv">$input</span><span class="p">);</span>
+        <span class="k">break</span><span class="p">;</span>
+        
+        <span class="k">case</span> <span class="s2">&quot;array&quot;</span><span class="o">:</span>
+            <span class="k">foreach</span> <span class="p">(</span><span class="nv">$input</span> <span class="k">as</span> <span class="nv">$key</span> <span class="o">=&gt;</span> <span class="nv">$val</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span><span class="p">(</span><span class="nb">is_string</span><span class="p">(</span><span class="nv">$val</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="nv">$return</span><span class="p">[</span><span class="nv">$key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">call_user_func</span><span class="p">(</span><span class="nv">$function</span><span class="p">,</span><span class="nv">$val</span><span class="p">);</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="nv">$returnTemp</span> <span class="o">=</span> <span class="nx">charset_transfer</span><span class="p">(</span><span class="nv">$val</span><span class="p">,</span><span class="nv">$function</span><span class="p">);</span>
+                    <span class="nv">$return</span><span class="p">[</span><span class="nv">$key</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$returnTemp</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="k">break</span><span class="p">;</span>  
+        
+        <span class="k">case</span> <span class="s2">&quot;object&quot;</span><span class="o">:</span>
+            <span class="nv">$inputVars</span> <span class="o">=</span> <span class="nb">get_object_vars</span><span class="p">(</span><span class="nv">$input</span><span class="p">);</span>
+            <span class="nv">$className</span> <span class="o">=</span> <span class="nb">get_class</span><span class="p">(</span><span class="nv">$input</span><span class="p">);</span>
+            <span class="nv">$classInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="nv">$className</span><span class="p">();</span>
+            
+            <span class="k">foreach</span> <span class="p">(</span><span class="nv">$inputVars</span> <span class="k">as</span> <span class="nv">$key</span> <span class="o">=&gt;</span> <span class="nv">$val</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span><span class="p">(</span><span class="nb">is_string</span><span class="p">(</span><span class="nv">$val</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="nv">$classInstance</span><span class="o">-&gt;</span><span class="nv">$key</span> <span class="o">=</span> <span class="nb">call_user_func</span><span class="p">(</span><span class="nv">$function</span><span class="p">,</span><span class="nv">$val</span><span class="p">);</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="nv">$returnTemp</span> <span class="o">=</span> <span class="nx">charset_transfer</span><span class="p">(</span><span class="nv">$val</span><span class="p">,</span><span class="nv">$function</span><span class="p">);</span>
+                    <span class="nv">$classInstance</span><span class="o">-&gt;</span><span class="nv">$key</span> <span class="o">=</span> <span class="nv">$returnTemp</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            
+            <span class="k">return</span> <span class="nv">$classInstance</span><span class="p">;</span>
+            
+        <span class="k">break</span><span class="p">;</span>
+        
+        <span class="k">default</span><span class="o">:</span>
+            <span class="k">die</span><span class="p">(</span><span class="s2">&quot;charset_transfer ERROR: TYPE UNSUPPORTED&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="nv">$return</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre>
+</div>
