@@ -12,9 +12,12 @@ aside.sidebar {
     line-height: 1.4em;
     margin-bottom: 1.5em;
     h1 {
+      //background-color: #edeiided;
+      //color: #fff;
+      //padding: 3px 5px 3px 5px;
       margin: 1.5em 0 0;
       padding-bottom: .2em;
-      border-bottom: 1px solid $sidebar-border;
+      border-bottom: 1px solid darken($sidebar-border, 14);
       @extend .side-shadow-border;
       + p {
         padding-top: .4em;
